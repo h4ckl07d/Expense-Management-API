@@ -7,7 +7,7 @@ import java.util.Objects;
 
 @Entity
 @Table(
-        name = "User",
+        name = "users",
         uniqueConstraints={
                 @UniqueConstraint(name = "user_email_unique", columnNames = "email")
         }
@@ -22,15 +22,18 @@ public class User {
             name = "id",
             updatable = false
     )
-    private long id;
+    private Long id;
+
     @Column(
             name = "name",
             nullable = false
     )
     private String name;
+
     @Column(
-            name = "name",
-            nullable = false
+            name = "email",
+            nullable = false,
+            columnDefinition = "TEXT"
 
     )
     private String email;
@@ -43,6 +46,10 @@ public class User {
         this.name = name;
         this.email = email;
         this.createdAt = createdAt;
+    }
+
+    public Long getId() {
+        return id;
     }
 
     public String getName() {
