@@ -37,15 +37,24 @@ public class User {
 
     )
     private String email;
+    @Column(
+            name = "created_at",
+            nullable = false,
+            updatable = false
+    )
     private LocalDate createdAt;
 
     public User() {
     }
 
-    public User(String name, String email, LocalDate createdAt ) {
+    @PrePersist
+    protected void onCreate() {
+        this.createdAt = LocalDate.now();
+    }
+
+    public User(String name, String email ) {
         this.name = name;
         this.email = email;
-        this.createdAt = createdAt;
     }
 
     public Long getId() {
@@ -64,6 +73,17 @@ public class User {
         return createdAt;
     }
 
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public void setCreatedAt(LocalDate createdAt) {
+        this.createdAt = createdAt;
+    }
 
     @Override
     public boolean equals(Object o) {
