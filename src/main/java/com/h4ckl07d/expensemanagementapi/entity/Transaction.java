@@ -2,6 +2,7 @@ package com.h4ckl07d.expensemanagementapi.entity;
 
 import jakarta.persistence.*;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Objects;
 
@@ -24,7 +25,7 @@ public class Transaction {
             name = "amount",
             nullable = false
     )
-    private long amount;
+    private BigDecimal amount;
 
     @Column(
             name = "description",
@@ -32,24 +33,46 @@ public class Transaction {
             columnDefinition = "TEXT"
     )
     private String description;
+
+    @Enumerated(EnumType.STRING)
     private TransactionType transactionType;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(
-            name = "userId",
-            updatable = false
+            name = "user_id",
+            nullable = false
     )
     private User user;
-    private LocalDate createdAt;
+
+    @Column(
+            name = "created_at",
+            nullable = false,
+            updatable = false
+    )
+    private LocalDate transactionDate;
+
+    @PrePersist
+    protected void onCreate() {
+        this.transactionDate = LocalDate.now();
+    }
 
     public Transaction() {
     }
+
+
+    public Transaction(BigDecimal amount,String description, TransactionType transactionType) {
+        this.amount = amount;
+        this.description = description;
+        this.transactionType = transactionType;
+
+    }
+
 
     public Long getId() {
         return id;
     }
 
-    public long getAmount() {
+    public BigDecimal getAmount() {
         return amount;
     }
 
@@ -65,28 +88,38 @@ public class Transaction {
         return user;
     }
 
-    public LocalDate getCreatedAt() {
-        return createdAt;
+    public LocalDate getTransactionDate() {
+        return transactionDate;
     }
 
-    public Transaction(long amount, User user, LocalDate createdAt, String description, TransactionType transactionType) {
+
+    public void setAmount(BigDecimal amount) {
         this.amount = amount;
-        this.user = user;
-        this.createdAt = createdAt;
-        this.description = description;
-        this.transactionType = transactionType;
-
     }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public void setTransactionType(TransactionType transactionType) {
+        this.transactionType = transactionType;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+    }
+
+
 
     @Override
     public boolean equals(Object o) {
-        if (o == null || getClass() != o.getClass()) return false;
-        Transaction that = (Transaction) o;
-        return id == that.id && amount == that.amount && Objects.equals(description, that.description) && Objects.equals(user, that.user) && Objects.equals(createdAt, that.createdAt);
+        if (this == o) return true;
+        if (!(o instanceof Transaction that)) return false;
+        return id != null && id.equals(that.id);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, amount, description, user, createdAt);
+        return getClass().hashCode(); // constant, safe even before id is assigned
     }
 }
