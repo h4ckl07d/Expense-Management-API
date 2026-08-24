@@ -3,6 +3,7 @@ package com.h4ckl07d.expensemanagementapi.controller;
 import com.h4ckl07d.expensemanagementapi.dto.request.CreateTransactionRequest;
 import com.h4ckl07d.expensemanagementapi.dto.response.TransactionResponse;
 import com.h4ckl07d.expensemanagementapi.entity.Transaction;
+import com.h4ckl07d.expensemanagementapi.entity.TransactionType;
 import com.h4ckl07d.expensemanagementapi.entity.User;
 import com.h4ckl07d.expensemanagementapi.repository.TransactionRepository;
 import com.h4ckl07d.expensemanagementapi.repository.UserRepository;
@@ -50,8 +51,16 @@ public class TransactionController {
                 .ok(transactionResponse);
     }
     @GetMapping
-    public ResponseEntity<List<TransactionResponse>> getAllTransactions(){
-        List<TransactionResponse> transaction = transactionService.getAllTransactions();
+    public ResponseEntity<List<TransactionResponse>> getAllTransactions(
+            @RequestParam(required = false)TransactionType type
+            ){
+        User currentUser = new User();
+
+        List<TransactionResponse> transaction = (type != null)
+                ? transactionService.getTransactionByType(currentUser, type)
+                : transactionService.getAllTransactions(currentUser);
+
         return ResponseEntity.ok(transaction);
+
     }
 }
