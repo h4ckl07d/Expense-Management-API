@@ -2,15 +2,12 @@ package com.h4ckl07d.expensemanagementapi.controller;
 
 import com.h4ckl07d.expensemanagementapi.dto.request.CreateUserRequest;
 import com.h4ckl07d.expensemanagementapi.dto.request.LoginUserRequest;
+import com.h4ckl07d.expensemanagementapi.dto.response.LoginResponse;
 import com.h4ckl07d.expensemanagementapi.dto.response.UserResponse;
-import com.h4ckl07d.expensemanagementapi.service.JwtService;
 import com.h4ckl07d.expensemanagementapi.service.UserService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 
@@ -19,13 +16,9 @@ import org.springframework.web.bind.annotation.*;
 public class UserController {
 
     private final UserService userService;
-    private final AuthenticationManager authenticationManager;
-    private final JwtService jwtService;
 
-    public UserController(UserService userService, AuthenticationManager authenticationManager, JwtService jwtService) {
+    public UserController(UserService userService) {
         this.userService = userService;
-        this.authenticationManager = authenticationManager;
-        this.jwtService = jwtService;
     }
 
     @PostMapping("/auth/register")
@@ -38,18 +31,14 @@ public class UserController {
     }
 
     @PostMapping("/auth/login")
-    public  ResponseEntity<String> login(
+    public  ResponseEntity<LoginResponse> login(
            @Valid @RequestBody LoginUserRequest request
             ){
 
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        request.email(),
-                        request.password()
-                )
-        );
-        String token = jwtService.generateToken(authentication.getName());
-        return ResponseEntity.ok(token);
+        LoginResponse response = userService.login(request);
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(response);
     }
     @GetMapping("users/{id}")
     public ResponseEntity<UserResponse> getUserById(
