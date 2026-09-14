@@ -2,9 +2,15 @@ package com.h4ckl07d.expensemanagementapi.service;
 
 
 import com.h4ckl07d.expensemanagementapi.dto.request.CreateUserRequest;
+import com.h4ckl07d.expensemanagementapi.dto.request.LoginUserRequest;
+import com.h4ckl07d.expensemanagementapi.dto.response.LoginResponse;
 import com.h4ckl07d.expensemanagementapi.dto.response.UserResponse;
 import com.h4ckl07d.expensemanagementapi.entity.User;
 import com.h4ckl07d.expensemanagementapi.repository.UserRepository;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -14,10 +20,14 @@ public class UserServiceImpl implements UserService{
 
     public final UserRepository userRepository;
     public final PasswordEncoder passwordEncoder;
+    public final AuthenticationManager authenticationManager;
+    public final JwtService jwtService;
 
-    public UserServiceImpl(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    public UserServiceImpl(UserRepository userRepository, PasswordEncoder passwordEncoder, AuthenticationManager authenticationManager, JwtService jwtService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.authenticationManager = authenticationManager;
+        this.jwtService = jwtService;
     }
 
     @Override
@@ -36,6 +46,26 @@ public class UserServiceImpl implements UserService{
 
         User response = userRepository.save(user);
         return UserResponse.from(response);
+    }
+
+    @Override
+    public LoginResponse login(LoginUserRequest request) {
+
+        Authentication authentication = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(
+                        request.email(),
+                        request.password()
+                )
+        );
+
+        String email = authentication.getName();
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+
+        String token = jwtService.generateToken(email);
+
+        return LoginResponse.from(user, token);
     }
 
     @Override
