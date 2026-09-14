@@ -11,6 +11,8 @@ import com.h4ckl07d.expensemanagementapi.service.TransactionService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -34,8 +36,12 @@ public class TransactionController {
     public ResponseEntity<TransactionResponse> createTransaction(
             @Valid @RequestBody CreateTransactionRequest request ){
 
-        User currentUser = userRepository.findById(1L)
-                .orElseThrow(() -> new IllegalStateException("Temp user not found — seed a user with id=1"));
+        Authentication authentication =
+                SecurityContextHolder.getContext().getAuthentication();
+
+        User currentUser = userRepository.findByEmail(authentication.getName())
+                .orElseThrow(() -> new IllegalStateException("User not found"));
+
         TransactionResponse transaction = transactionService.createTransaction(request, currentUser);
         return ResponseEntity
                 .status(HttpStatus.CREATED)
@@ -54,7 +60,10 @@ public class TransactionController {
     public ResponseEntity<List<TransactionResponse>> getAllTransactions(
             @RequestParam(required = false)TransactionType type
             ){
-        User currentUser = new User();
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        User currentUser = userRepository.findByEmail(authentication.getName())
+                .orElseThrow(() -> new IllegalStateException("User not found"));
 
         List<TransactionResponse> transaction = (type != null)
                 ? transactionService.getTransactionByType(currentUser, type)

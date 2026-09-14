@@ -11,5 +11,8 @@ public record UpdateUserRequest(
 
         @NotBlank
         @Size(max = 250, message = "Email must not exceed 250 characters ")
-        String email
+        String email,
+
+        @NotBlank
+        String password
 ) {}
