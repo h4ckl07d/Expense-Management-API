@@ -1,6 +1,8 @@
 package com.h4ckl07d.expensemanagementapi.service;
 
 
+import com.h4ckl07d.expensemanagementapi.Exception.EmailAlreadyExistsException;
+import com.h4ckl07d.expensemanagementapi.Exception.UserNotFoundException;
 import com.h4ckl07d.expensemanagementapi.dto.request.CreateUserRequest;
 import com.h4ckl07d.expensemanagementapi.dto.request.LoginUserRequest;
 import com.h4ckl07d.expensemanagementapi.dto.response.LoginResponse;
@@ -33,7 +35,7 @@ public class UserServiceImpl implements UserService{
     @Override
     public UserResponse createUser(CreateUserRequest request) {
         if (userRepository.existsByEmail(request.email())){
-            throw new IllegalArgumentException("Email already exists");
+            throw new EmailAlreadyExistsException("Email already exists");
         }
         User user = new User();
 
@@ -47,7 +49,7 @@ public class UserServiceImpl implements UserService{
         User response = userRepository.save(user);
         return UserResponse.from(response);
     }
-
+;
     @Override
     public LoginResponse login(LoginUserRequest request) {
 
@@ -61,7 +63,7 @@ public class UserServiceImpl implements UserService{
         String email = authentication.getName();
 
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
 
         String token = jwtService.generateToken(email);
 
@@ -71,7 +73,7 @@ public class UserServiceImpl implements UserService{
     @Override
     public UserResponse getUserById(Long id) {
         User response = userRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
         return UserResponse.from(response);
     }
 }
